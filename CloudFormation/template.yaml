@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: A simple CloudFormation template for creating a security group and launching an EC2 instance
+
+Resources:
+  ChatGPTKeyPair:
+    Type: 'AWS::EC2::KeyPair'
+    Properties:
+      KeyName: chatgpt-demo
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: chatgpt-demo-sg
+      GroupDescription: Security group for chatgpt-demo EC2 instance
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8501
+          ToPort: 8501
+          CidrIp: 0.0.0.0/0
+
+  Ec2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: g4dn.xlarge
+      ImageId: ami-03a933af70fa97ad2
+      KeyName: chatgpt-demo
+      SecurityGroups:
+        - Ref: SecurityGroup
+      UserData:
+        'Fn::Base64': |
+          #!/bin/bash
+          # Activate the pre-built pytorch environment
+          source activate pytorch_p36
+
+          # Install the libraries "transformers" and "streamlit" via pip
+          pip install transformers streamlit
